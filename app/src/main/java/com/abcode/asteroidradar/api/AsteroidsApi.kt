@@ -15,6 +15,4 @@ interface AsteroidsApi {
         @Query("api_key") apiKey: String,
         @Query("start_date") startDate: String
     ): ResponseBody
-
-
 }
