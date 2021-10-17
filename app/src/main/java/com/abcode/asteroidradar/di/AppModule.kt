@@ -1,7 +1,10 @@
 package com.abcode.asteroidradar.di
 
+import android.app.Application
+import androidx.room.Room
 import com.abcode.asteroidradar.Constants
 import com.abcode.asteroidradar.api.AsteroidsApi
+import com.abcode.asteroidradar.data.AsteroidsDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,8 +27,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRestaurantApi(retrofit: Retrofit):AsteroidsApi=retrofit.create(AsteroidsApi::class.java)
+    fun provideAsteroidsApi(retrofit: Retrofit): AsteroidsApi =
+        retrofit.create(AsteroidsApi::class.java)
 
     // ROOM DATABASE
-
+    @Provides
+    @Singleton
+    fun provideDatabase(app: Application): AsteroidsDatabase =
+        Room.databaseBuilder(app, AsteroidsDatabase::class.java, "asteroids_database")
+            .build()
 }
