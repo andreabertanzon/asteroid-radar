@@ -1,6 +1,7 @@
 package com.abcode.asteroidradar.data
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -14,4 +15,7 @@ interface AsteroidDao {
 
     @Query("SELECT a.* FROM asteroids as a WHERE a.closeApproachDate BETWEEN datetime('now', '-1 day') AND datetime('now') ORDER BY a.closeApproachDate")
     fun getTodayAsteroids(): Flow<List<AsteroidDto>>
+
+    @Insert
+    fun insertAsteroids(asteroids: List<AsteroidDto>)
 }
