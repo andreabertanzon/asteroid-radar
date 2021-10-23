@@ -4,7 +4,6 @@ import android.util.Log
 import com.abcode.asteroidradar.Asteroid
 import com.abcode.asteroidradar.BuildConfig
 import com.abcode.asteroidradar.api.AsteroidsApi
-import com.abcode.asteroidradar.api.getNextSevenDaysFormattedDates
 import com.abcode.asteroidradar.api.parseAsteroidsJsonResult
 import com.abcode.asteroidradar.data.AsteroidsDatabase
 import com.abcode.asteroidradar.data.asDomainModel
@@ -46,18 +45,21 @@ class AsteroidRepository @Inject constructor(
         var output: Boolean
 
         withContext(Dispatchers.IO) {
-            try {
-                val nextSevenDays = getNextSevenDaysFormattedDates()
-                val asteroids = api.getAsteroidsAsync(nextSevenDays[0], nextSevenDays[6], BuildConfig.ASTEROID_API_KEY)
-                val asteroidsToInsert = parseAsteroidsJsonResult(JSONObject(asteroids))
+            output = try {
+                val asteroids = api.getAsteroidsAsync(BuildConfig.ASTEROID_API_KEY)
+
+                val stringAsteroid = asteroids.string()
+                Log.i("ASTEROIDSCALL", stringAsteroid)
+
+                val asteroidsToInsert = parseAsteroidsJsonResult(JSONObject(stringAsteroid))
                 db.asteroidDao().insertAsteroids(asteroidsToInsert.toDtoModel())
-                output = true
+                true
             } catch (err: Throwable) {
                 Log.e(
                     "AsteroidRepository",
                     err.localizedMessage ?: "Error retrieving data from API"
                 )
-                 output = false
+                false
             }
         }
         return output
