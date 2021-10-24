@@ -62,7 +62,8 @@ class AsteroidRepository @Inject constructor(
             } catch (err: Throwable) {
                 Log.e(
                     "AsteroidRepository",
-                    err.localizedMessage ?: "Error retrieving data from API"
+                    err.localizedMessage
+                        ?: "Error retrieving data from API"
                 )
                 false
             }

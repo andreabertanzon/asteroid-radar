@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.abcode.asteroidradar.Constants
 import com.abcode.asteroidradar.api.AsteroidsApi
 import com.abcode.asteroidradar.data.AsteroidsDatabase
+import com.abcode.asteroidradar.repository.LocalInfoRepository
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -48,4 +49,5 @@ object AppModule {
     fun provideDatabase(app: Application): AsteroidsDatabase =
         Room.databaseBuilder(app, AsteroidsDatabase::class.java, "asteroids_database")
             .build()
+
 }
