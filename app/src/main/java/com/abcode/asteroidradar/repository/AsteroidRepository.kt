@@ -3,7 +3,9 @@ package com.abcode.asteroidradar.repository
 import android.util.Log
 import com.abcode.asteroidradar.Asteroid
 import com.abcode.asteroidradar.BuildConfig
+import com.abcode.asteroidradar.PictureOfDay
 import com.abcode.asteroidradar.api.AsteroidsApi
+import com.abcode.asteroidradar.api.getNextSevenDaysFormattedDates
 import com.abcode.asteroidradar.api.parseAsteroidsJsonResult
 import com.abcode.asteroidradar.data.AsteroidsDatabase
 import com.abcode.asteroidradar.data.asDomainModel
@@ -41,15 +43,18 @@ class AsteroidRepository @Inject constructor(
         }
     }
 
-    suspend fun refreshAsteroids():Boolean {
+    suspend fun refreshAsteroids(): Boolean {
         var output: Boolean
 
         withContext(Dispatchers.IO) {
             output = try {
-                val asteroids = api.getAsteroidsAsync(BuildConfig.ASTEROID_API_KEY)
+                val nextSevenDays = getNextSevenDaysFormattedDates()
+                val asteroids = api.getAsteroidsAsync(
+                    startDate = nextSevenDays[0],
+                    BuildConfig.ASTEROID_API_KEY
+                )
 
                 val stringAsteroid = asteroids.string()
-                Log.i("ASTEROIDSCALL", stringAsteroid)
 
                 val asteroidsToInsert = parseAsteroidsJsonResult(JSONObject(stringAsteroid))
                 db.asteroidDao().insertAsteroids(asteroidsToInsert.toDtoModel())
@@ -64,5 +69,16 @@ class AsteroidRepository @Inject constructor(
         }
         return output
     }
+
+    suspend fun refreshPictureOfDay(): PictureOfDay? =
+        withContext(Dispatchers.IO) {
+            val output = try {
+                api.getPictureOfDayAsync(BuildConfig.ASTEROID_API_KEY)
+            } catch (err: Exception) {
+                Log.e("refreshPictureOfDay", err.printStackTrace().toString())
+                null
+            }
+            return@withContext output
+        }
 }
 

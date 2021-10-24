@@ -9,7 +9,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
+        android:layout_margin="8dp"
         tools:background="@color/colorPrimary">
 
         <ImageView
@@ -27,6 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
+            android:text="@{asteroidItem.codename}"
             tools:text="TITLE" />
 
         <TextView
@@ -37,6 +38,7 @@
             android:layout_alignParentStart="true"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
+            android:text="@{asteroidItem.closeApproachDate}"
             tools:text="2020-02-08" />
 
     </RelativeLayout>

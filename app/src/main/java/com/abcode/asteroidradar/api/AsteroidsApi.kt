@@ -12,6 +12,7 @@ interface AsteroidsApi {
 
     @GET("neo/rest/v1/feed")
     suspend fun getAsteroidsAsync(
+        @Query("start_date") startDate: String,
         @Query("api_key") apiKey: String
     ) : ResponseBody
 }

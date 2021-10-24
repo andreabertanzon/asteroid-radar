@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.abcode.asteroidradar.Asteroid
 import com.abcode.asteroidradar.R
 import com.abcode.asteroidradar.databinding.FragmentDetailBinding
@@ -36,4 +37,8 @@ class DetailFragment : Fragment() {
             .setPositiveButton(android.R.string.ok, null)
         builder.create().show()
     }
+
+//    override fun onBackPressed(){d
+//         findNavController().navigate(FragmentDetailDirections)
+//    }
 }

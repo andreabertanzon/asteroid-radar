@@ -8,6 +8,7 @@ import com.abcode.asteroidradar.api.AsteroidsApi
 import com.abcode.asteroidradar.api.getNextSevenDaysFormattedDates
 import com.abcode.asteroidradar.api.parseAsteroidsJsonResult
 import com.abcode.asteroidradar.data.AsteroidsDatabase
+import com.abcode.asteroidradar.data.LocalDto
 import com.abcode.asteroidradar.data.asDomainModel
 import com.abcode.asteroidradar.data.toDtoModel
 import kotlinx.coroutines.Dispatchers
@@ -15,72 +16,41 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 
-class AsteroidRepository @Inject constructor(
-    private val api: AsteroidsApi,
+class LocalInfoRepository @Inject constructor(
     private val db: AsteroidsDatabase
 ) {
+    suspend fun getLocalInfo(): Boolean =
+        withContext(Dispatchers.IO) {
+            db.localInfoDao().getLocalInfo()?.fetched ?: false
+    }
 
-    fun getAsteroids(filter: FilterEnum = FilterEnum.ALL): Flow<List<Asteroid>> {
-        return when (filter) {
-            FilterEnum.ALL -> {
-                db.asteroidDao().getAllAsteroids().map {
-                    it.asDomainModel()
-                }
-            }
-            FilterEnum.WEEK -> {
-                db.asteroidDao().getWeeklyAsteroids().map {
-                    it.asDomainModel()
-                }
-            }
-            else -> {
-                db.asteroidDao().getTodayAsteroids().map {
-                    it.asDomainModel()
-                }
+    suspend fun upsertLocalInfo() {
+        withContext(Dispatchers.IO) {
+            val existingInfo = db.localInfoDao().getLocalInfo()
+
+            if (existingInfo == null){
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                val dateWithoutTime: String = sdf.format(Date())
+
+                val todayInfo = LocalDto(
+                    id = 0,
+                    fetched = true,
+                    creationDate = dateWithoutTime
+                )
+
+                db.localInfoDao().insertLocalInfo(todayInfo)
+            } else {
+                existingInfo.fetched = true
+
+                db.localInfoDao().insertLocalInfo(existingInfo)
             }
         }
     }
 
-    suspend fun refreshAsteroids(): Boolean {
-        var output: Boolean
-
-        withContext(Dispatchers.IO) {
-            output = try {
-                val nextSevenDays = getNextSevenDaysFormattedDates()
-                val asteroids = api.getAsteroidsAsync(
-                    startDate = nextSevenDays[0],
-                    nextSevenDays[6],
-                    BuildConfig.ASTEROID_API_KEY
-                )
-
-                val stringAsteroid = asteroids.string()
-                //Log.i("ASTEROIDSCALL", stringAsteroid)
-
-                val asteroidsToInsert = parseAsteroidsJsonResult(JSONObject(stringAsteroid))
-                db.asteroidDao().insertAsteroids(asteroidsToInsert.toDtoModel())
-                true
-            } catch (err: Throwable) {
-                Log.e(
-                    "AsteroidRepository",
-                    err.localizedMessage ?: "Error retrieving data from API"
-                )
-                false
-            }
-        }
-        return output
-    }
-
-    suspend fun refreshPictureOfDay(): PictureOfDay? =
-        withContext(Dispatchers.IO) {
-            val output = try {
-                api.getPictureOfDayAsync(BuildConfig.ASTEROID_API_KEY)
-            } catch (err: Exception) {
-                Log.e("refreshPictureOfDay", err.printStackTrace().toString())
-                null
-            }
-            return@withContext output
-        }
 }
 
